@@ -13,6 +13,7 @@ import { LeadCommunicationPanel } from "@/components/leads/LeadCommunicationPane
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TablePagination } from "@/components/ui/TablePagination";
+import { normalizePhoneNumber } from "@/lib/phone";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 type LeadRecord = {
@@ -111,6 +112,12 @@ export function LeadManagement({
     resolver: zodResolver(leadCreateSchema),
     defaultValues: defaultLeadValues,
   });
+  const phoneField = form.register("phone");
+  const watchedPhone = form.watch("phone") ?? "";
+  const normalizedPhonePreview = normalizePhoneNumber(watchedPhone);
+  const showsAutoPhoneHint = Boolean(
+    watchedPhone.trim() && normalizedPhonePreview && normalizedPhonePreview !== watchedPhone.trim(),
+  );
 
   async function loadLeads(page = meta.page) {
     setIsLoading(true);
@@ -493,7 +500,28 @@ export function LeadManagement({
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("phone")} />
+                <input
+                  type="tel"
+                  placeholder="010..., 201..., or +201..."
+                  className="w-full rounded-2xl border-slate-200 bg-white text-sm"
+                  {...phoneField}
+                  onBlur={(event) => {
+                    phoneField.onBlur(event);
+                    const normalized = normalizePhoneNumber(event.target.value);
+
+                    if (normalized && normalized !== event.target.value.trim()) {
+                      form.setValue("phone", normalized, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    }
+                  }}
+                />
+                <p className={`mt-2 text-xs ${showsAutoPhoneHint ? "text-emerald-700" : "text-slate-500"}`}>
+                  {showsAutoPhoneHint
+                    ? `Will be saved as ${normalizedPhonePreview} for WhatsApp compatibility.`
+                    : "Local mobile numbers are converted to international format automatically when possible."}
+                </p>
               </label>
             </div>
 

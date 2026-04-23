@@ -11,6 +11,7 @@ import {
   type OutreachChannel,
   type OutreachTemplateKey,
 } from "@/lib/communication-templates";
+import { isE164PhoneNumber, normalizePhoneNumber } from "@/lib/phone";
 import { formatCurrency } from "@/lib/utils";
 
 type LeadMessageRecord = {
@@ -62,6 +63,14 @@ function getMetadataValue(metadata: Record<string, unknown> | null | undefined, 
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function formatProviderStatus(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  return value.replaceAll("_", " ").toLowerCase();
+}
+
 function getDefaultChannel(lead: CommunicationLead): OutreachChannel {
   if (lead.email) {
     return "EMAIL";
@@ -103,6 +112,8 @@ export function LeadCommunicationPanel({
 
   const hasEmail = Boolean(lead.email);
   const hasWhatsApp = Boolean(lead.phone);
+  const normalizedWhatsApp = normalizePhoneNumber(lead.phone);
+  const hasValidWhatsApp = isE164PhoneNumber(normalizedWhatsApp);
   const hasAvailableChannel = hasEmail || hasWhatsApp;
 
   function applyTemplate(nextChannel: OutreachChannel, nextTemplateKey: OutreachTemplateKey) {
@@ -191,17 +202,18 @@ export function LeadCommunicationPanel({
       }
 
       setMessages((current) => [payload.message, ...current]);
+      const providerStatus = formatProviderStatus(getMetadataValue(payload.message?.metadata, "providerStatus"));
       setFeedback(
         channel === "EMAIL"
-          ? "Email sent and logged on the lead timeline."
-          : "WhatsApp message sent and logged on the lead timeline.",
+          ? `Email ${providerStatus ?? "accepted"} by the provider and logged on the lead timeline.`
+          : `WhatsApp message ${providerStatus ?? "accepted"} by the provider and logged on the lead timeline.`,
       );
 
       if (payload.lead?.status === "CONTACTED" && lead.status === "NEW") {
         setFeedback(
           channel === "EMAIL"
-            ? "Email sent, logged, and the lead was moved to CONTACTED."
-            : "WhatsApp sent, logged, and the lead was moved to CONTACTED.",
+            ? `Email ${providerStatus ?? "accepted"}, logged, and the lead was moved to CONTACTED.`
+            : `WhatsApp message ${providerStatus ?? "accepted"}, logged, and the lead was moved to CONTACTED.`,
         );
       }
 
@@ -248,6 +260,12 @@ export function LeadCommunicationPanel({
             <span className="font-medium text-slate-700">WhatsApp</span>
             <span className={hasWhatsApp ? "text-slate-700" : "text-rose-600"}>{lead.phone ?? "Missing"}</span>
           </div>
+          {hasValidWhatsApp && normalizedWhatsApp && lead.phone && normalizedWhatsApp !== lead.phone ? (
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium text-slate-700">WhatsApp send-to</span>
+              <span>{normalizedWhatsApp}</span>
+            </div>
+          ) : null}
           <div className="flex items-center justify-between gap-3">
             <span className="font-medium text-slate-700">Property</span>
             <span>{lead.property?.referenceCode ?? "None linked"}</span>
@@ -323,6 +341,18 @@ export function LeadCommunicationPanel({
             </div>
           ) : null}
 
+          {channel === "WHATSAPP" && hasWhatsApp && hasValidWhatsApp && normalizedWhatsApp !== lead.phone ? (
+            <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              We will automatically send this WhatsApp message using <code>{normalizedWhatsApp}</code>.
+            </div>
+          ) : null}
+
+          {channel === "WHATSAPP" && hasWhatsApp && !hasValidWhatsApp ? (
+            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+              Update the lead phone to international format before sending on WhatsApp. Example: <code>+201093456760</code>
+            </div>
+          ) : null}
+
           {feedback ? (
             <div
               className={`rounded-2xl px-4 py-3 text-sm ${
@@ -345,13 +375,13 @@ export function LeadCommunicationPanel({
               onClick={() => void handleSend()}
               disabled={
                 isSending ||
-                !hasAvailableChannel ||
-                !body.trim() ||
-                (channel === "EMAIL" && !hasEmail) ||
-                (channel === "WHATSAPP" && !hasWhatsApp) ||
-                (channel === "EMAIL" && !subject.trim())
-              }
-            >
+                 !hasAvailableChannel ||
+                 !body.trim() ||
+                 (channel === "EMAIL" && !hasEmail) ||
+                 (channel === "WHATSAPP" && (!hasWhatsApp || !hasValidWhatsApp)) ||
+                 (channel === "EMAIL" && !subject.trim())
+               }
+             >
               <Send className="mr-2 h-4 w-4" />
               {isSending ? "Sending..." : `Send ${channel === "EMAIL" ? "email" : "WhatsApp"}`}
             </Button>
@@ -378,6 +408,8 @@ export function LeadCommunicationPanel({
               {messages.map((message) => {
                 const subjectLine = getMetadataValue(message.metadata, "subject");
                 const recipient = getMetadataValue(message.metadata, "recipient");
+                const provider = getMetadataValue(message.metadata, "provider");
+                const providerStatus = formatProviderStatus(getMetadataValue(message.metadata, "providerStatus"));
 
                 return (
                   <div key={message.id} className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
@@ -392,6 +424,8 @@ export function LeadCommunicationPanel({
                     <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600">{message.content}</p>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                       {recipient ? <span>Recipient: {recipient}</span> : null}
+                      {provider ? <span>Provider: {provider.replaceAll("_", " ")}</span> : null}
+                      {providerStatus ? <span>Status: {providerStatus}</span> : null}
                       {message.user?.name ? <span>Sent by: {message.user.name}</span> : null}
                     </div>
                   </div>

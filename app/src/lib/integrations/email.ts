@@ -7,8 +7,14 @@ export interface EmailPayload {
   text?: string;
 }
 
+export interface EmailDeliveryResult {
+  provider: "SENDGRID";
+  providerStatus: "accepted";
+  providerMessageId?: string | null;
+}
+
 interface EmailProvider {
-  send(payload: EmailPayload): Promise<void>;
+  send(payload: EmailPayload): Promise<EmailDeliveryResult>;
 }
 
 class SendGridEmailProvider implements EmailProvider {
@@ -35,14 +41,26 @@ class SendGridEmailProvider implements EmailProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`SendGrid request failed with ${response.status}`);
+      const details = await response.text();
+      throw new Error(`SendGrid request failed with ${response.status}${details ? `: ${details}` : ""}`);
     }
+
+    return {
+      provider: "SENDGRID",
+      providerStatus: "accepted",
+      providerMessageId: response.headers.get("x-message-id"),
+    } satisfies EmailDeliveryResult;
   }
 }
 
 class ConsoleEmailProvider implements EmailProvider {
   async send(payload: EmailPayload) {
     console.info("Email dispatch", payload);
+    return {
+      provider: "SENDGRID",
+      providerStatus: "accepted",
+      providerMessageId: null,
+    } satisfies EmailDeliveryResult;
   }
 }
 
@@ -57,4 +75,3 @@ class EmailService {
 export const emailService = new EmailService(
   env.sendGridApiKey ? new SendGridEmailProvider() : new ConsoleEmailProvider(),
 );
-

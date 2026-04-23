@@ -4,6 +4,7 @@ import type { SessionUser } from "@real-estate-crm/shared";
 import { aiClient } from "@/lib/ai/client";
 import { ApiError } from "@/lib/api-response";
 import { calendarService } from "@/lib/integrations/calendar";
+import { normalizePhoneNumber } from "@/lib/phone";
 import { buildPaginationMeta, getPagination } from "@/lib/pagination";
 import { isAgent, isManagerOrAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -180,6 +181,7 @@ export async function getLeadById(ctx: SessionUser, leadId: string) {
 }
 
 export async function createLead(ctx: SessionUser, input: LeadInput) {
+  const normalizedPhone = normalizePhoneNumber(input.phone);
   const assignedToId = input.assignedToId
     ? isAgent(ctx.role)
       ? ctx.id
@@ -205,7 +207,7 @@ export async function createLead(ctx: SessionUser, input: LeadInput) {
       propertyId: input.propertyId ?? null,
       fullName: input.fullName ?? "",
       email: input.email || null,
-      phone: input.phone || null,
+      phone: normalizedPhone || null,
       source: input.source ?? "Manual",
       status: input.status ?? "NEW",
       budget: input.budget ?? null,
@@ -248,6 +250,7 @@ export async function createLead(ctx: SessionUser, input: LeadInput) {
 
 export async function updateLead(ctx: SessionUser, leadId: string, input: LeadInput) {
   const current = await ensureLeadAccessible(ctx, leadId);
+  const normalizedInputPhone = input.phone === undefined ? undefined : normalizePhoneNumber(input.phone);
 
   if (input.assignedToId && !isManagerOrAdmin(ctx.role)) {
     throw new ApiError(403, "Only managers and admins can reassign leads.");
@@ -264,7 +267,7 @@ export async function updateLead(ctx: SessionUser, leadId: string, input: LeadIn
   const merged = {
     fullName: input.fullName ?? current.fullName,
     email: input.email ?? current.email,
-    phone: input.phone ?? current.phone,
+    phone: normalizedInputPhone ?? current.phone,
     source: input.source ?? current.source,
     status: input.status ?? current.status,
     budget: input.budget ?? (current.budget ? Number(current.budget) : null),

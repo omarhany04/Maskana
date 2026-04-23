@@ -6,8 +6,14 @@ export interface WhatsAppMessagePayload {
   body: string;
 }
 
+export interface WhatsAppDeliveryResult {
+  provider: "TWILIO_WHATSAPP";
+  providerStatus: string;
+  providerMessageId?: string | null;
+}
+
 interface WhatsAppProvider {
-  sendMessage(payload: WhatsAppMessagePayload): Promise<void>;
+  sendMessage(payload: WhatsAppMessagePayload): Promise<WhatsAppDeliveryResult>;
 }
 
 function normalizeWhatsAppAddress(address: string) {
@@ -40,12 +46,25 @@ class TwilioWhatsAppProvider implements WhatsAppProvider {
       const details = await response.text();
       throw new Error(`WhatsApp request failed with ${response.status}${details ? `: ${details}` : ""}`);
     }
+
+    const payloadResponse = (await response.json()) as { sid?: string; status?: string };
+
+    return {
+      provider: "TWILIO_WHATSAPP",
+      providerStatus: payloadResponse.status ?? "accepted",
+      providerMessageId: payloadResponse.sid ?? null,
+    } satisfies WhatsAppDeliveryResult;
   }
 }
 
 class ConsoleWhatsAppProvider implements WhatsAppProvider {
   async sendMessage(payload: WhatsAppMessagePayload) {
     console.info("WhatsApp dispatch", payload);
+    return {
+      provider: "TWILIO_WHATSAPP",
+      providerStatus: "accepted",
+      providerMessageId: null,
+    } satisfies WhatsAppDeliveryResult;
   }
 }
 
