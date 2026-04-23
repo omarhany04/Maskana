@@ -1,0 +1,19 @@
+{
+  "name": "real-estate-crm-platform",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "app",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace app",
+    "build": "npm run build --workspace app",
+    "start": "npm run start --workspace app",
+    "lint": "npm run lint --workspace app",
+    "db:generate": "npm run db:generate --workspace app",
+    "db:migrate": "npm run db:migrate --workspace app",
+    "db:seed": "npm run db:seed --workspace app"
+  }
+}
+

@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: real-estate-crm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: real_estate_crm
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    depends_on:
+      - postgres
+      - python-service
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/real_estate_crm?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      AI_SERVICE_URL: http://python-service:8000
+    ports:
+      - "3000:3000"
+
+  python-service:
+    build:
+      context: .
+      dockerfile: python-service/Dockerfile
+    env_file:
+      - python-service/.env.example
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
