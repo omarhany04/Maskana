@@ -19,7 +19,6 @@ export default async function SettingsPage() {
         email: Boolean(env.sendGridApiKey),
         whatsapp: Boolean(env.twilioAccountSid && env.twilioAuthToken && env.twilioWhatsAppNumber),
         googleCalendar: Boolean(env.googleCalendarClientId && env.googleCalendarClientSecret && env.googleCalendarRefreshToken),
-        outlookCalendar: Boolean(env.outlookClientId && env.outlookClientSecret && env.outlookRefreshToken),
       }}
     />
   );

@@ -16,7 +16,4 @@ export const env = {
   googleCalendarClientId: process.env.GOOGLE_CALENDAR_CLIENT_ID ?? "",
   googleCalendarClientSecret: process.env.GOOGLE_CALENDAR_CLIENT_SECRET ?? "",
   googleCalendarRefreshToken: process.env.GOOGLE_CALENDAR_REFRESH_TOKEN ?? "",
-  outlookClientId: process.env.OUTLOOK_CLIENT_ID ?? "",
-  outlookClientSecret: process.env.OUTLOOK_CLIENT_SECRET ?? "",
-  outlookRefreshToken: process.env.OUTLOOK_REFRESH_TOKEN ?? "",
 };

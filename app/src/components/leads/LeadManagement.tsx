@@ -3,12 +3,13 @@
 import { useDeferredValue, useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bot, Filter, Save, Sparkles, Trash2, UserPlus2 } from "lucide-react";
+import { Bot, Filter, MessageSquare, Save, Sparkles, Trash2, UserPlus2 } from "lucide-react";
 
 import type { ApiListResponse, SessionUser } from "@real-estate-crm/shared";
 import { leadCreateSchema, leadStatuses } from "@real-estate-crm/shared";
 
 import { Button } from "@/components/ui/Button";
+import { LeadCommunicationPanel } from "@/components/leads/LeadCommunicationPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TablePagination } from "@/components/ui/TablePagination";
@@ -79,11 +80,13 @@ const defaultLeadValues: LeadFormValues = {
 };
 
 export function LeadManagement({
+  companyName,
   initialData,
   agents,
   currentUser,
   properties,
 }: {
+  companyName: string;
   initialData: ApiListResponse<LeadRecord>;
   agents: Array<{ id: string; name: string; role: string }>;
   currentUser: SessionUser;
@@ -95,6 +98,7 @@ export function LeadManagement({
   const [statusFilter, setStatusFilter] = useState("");
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [editingLeadId, setEditingLeadId] = useState<string | null>(null);
+  const [communicationLead, setCommunicationLead] = useState<LeadRecord | null>(null);
   const [insightQuery, setInsightQuery] = useState("Investor looking for luxury villa in North Coast under $1.2M");
   const [insightResult, setInsightResult] = useState<string>("");
   const [semanticMatches, setSemanticMatches] = useState<Array<Record<string, unknown>>>([]);
@@ -142,12 +146,14 @@ export function LeadManagement({
 
   function resetEditor() {
     setEditingLeadId(null);
+    setCommunicationLead(null);
     setFormMessage(null);
     form.reset(defaultLeadValues);
   }
 
   function startEditing(lead: LeadRecord) {
     setEditingLeadId(lead.id);
+    setCommunicationLead(lead);
     setFormMessage(null);
     form.reset({
       fullName: lead.fullName,
@@ -246,7 +252,7 @@ export function LeadManagement({
       <PageHeader
         eyebrow="Lead operations"
         title="Lead pipeline and assignment desk"
-        description="Capture, qualify, assign, and advance leads with tenant-aware visibility and AI scoring."
+        description="Capture, qualify, assign, and advance leads with tenant-aware visibility, AI scoring, and built-in outreach."
         action={
           <Button onClick={resetEditor} variant={editingLeadId ? "secondary" : "primary"}>
             {editingLeadId ? "Create new lead" : "Ready to create"}
@@ -380,6 +386,10 @@ export function LeadManagement({
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-2">
+                          <Button onClick={() => startEditing(lead)}>
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            Message
+                          </Button>
                           <Button variant="secondary" onClick={() => startEditing(lead)}>
                             Edit
                           </Button>
@@ -454,7 +464,7 @@ export function LeadManagement({
                 {editingLeadId ? "Update lead" : "Create lead"}
               </p>
               <h3 className="mt-2 text-2xl font-bold text-ink">
-                {editingLeadId ? "Edit qualification profile" : "Capture a new opportunity"}
+                {editingLeadId ? "Edit qualification profile and outreach" : "Capture a new opportunity"}
               </h3>
             </div>
             <div className="rounded-2xl bg-sea-100 p-3">
@@ -589,9 +599,18 @@ export function LeadManagement({
               Syncing lead data...
             </div>
           )}
+
+          {communicationLead ? (
+            <LeadCommunicationPanel
+              companyName={companyName}
+              lead={communicationLead}
+              onSent={async () => {
+                await loadLeads(meta.page);
+              }}
+            />
+          ) : null}
         </div>
       </section>
     </div>
   );
 }
-

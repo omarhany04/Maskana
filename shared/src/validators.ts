@@ -85,6 +85,23 @@ export const messageCreateSchema = z.object({
   content: z.string().min(1).max(4000),
 });
 
+export const leadCommunicationSchema = z
+  .object({
+    channel: z.enum(["EMAIL", "WHATSAPP"]),
+    subject: emptyToUndefined(z.string().min(2).max(160)),
+    body: z.string().trim().min(5).max(4000),
+    templateKey: emptyToUndefined(z.string().min(2).max(80)),
+  })
+  .superRefine((value, ctx) => {
+    if (value.channel === "EMAIL" && !value.subject) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["subject"],
+        message: "Email subject is required.",
+      });
+    }
+  });
+
 export const aiAnalyzeSchema = z.object({
   query: z.string().min(2),
 });

@@ -23,12 +23,11 @@ const settingsSchema = z.object({
 type SettingsValues = z.infer<typeof settingsSchema>;
 
 const integrationMeta = [
-  { key: "ai", label: "AI service", icon: BotMessageSquare },
-  { key: "s3", label: "AWS S3", icon: Cloud },
-  { key: "email", label: "Email", icon: Mail },
-  { key: "whatsapp", label: "WhatsApp (Twilio)", icon: Smartphone },
-  { key: "googleCalendar", label: "Google Calendar", icon: CalendarSync },
-  { key: "outlookCalendar", label: "Outlook Calendar", icon: CalendarSync },
+  { key: "ai", label: "AI service", description: "Powers lead analysis, semantic search, and reply assistance.", icon: BotMessageSquare },
+  { key: "s3", label: "AWS S3", description: "Stores property media uploads and listing assets.", icon: Cloud },
+  { key: "email", label: "Email", description: "Used in the Leads outreach panel for real client follow-up.", icon: Mail },
+  { key: "whatsapp", label: "WhatsApp (Twilio)", description: "Used in the Leads outreach panel for direct WhatsApp messaging.", icon: Smartphone },
+  { key: "googleCalendar", label: "Google Calendar", description: "Auto-creates visit events when leads move to VISIT.", icon: CalendarSync },
 ] as const;
 
 export function SettingsPanel({
@@ -123,6 +122,9 @@ export function SettingsPanel({
           <div className="glass-panel p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Integration surface</p>
             <h3 className="mt-2 text-2xl font-bold text-ink">Provider readiness</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-500">
+              Email and WhatsApp are now part of the live lead workflow in the Leads page, not just passive provider checks.
+            </p>
             <div className="mt-6 grid gap-3">
               {integrationMeta.map((item) => {
                 const Icon = item.icon;
@@ -134,7 +136,10 @@ export function SettingsPanel({
                       <div className="rounded-2xl bg-white p-3 shadow-sm">
                         <Icon className="h-4 w-4 text-sea-700" />
                       </div>
-                      <span className="font-medium text-slate-700">{item.label}</span>
+                      <div>
+                        <p className="font-medium text-slate-700">{item.label}</p>
+                        <p className="text-sm text-slate-500">{item.description}</p>
+                      </div>
                     </div>
                     <StatusBadge value={enabled ? "ACTIVE" : "ARCHIVED"} />
                   </div>
