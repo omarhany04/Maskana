@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LockKeyhole, Mail } from "lucide-react";
+import { Building2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 
 import { loginSchema } from "@real-estate-crm/shared";
 
@@ -48,19 +48,20 @@ export function LoginForm() {
   });
 
   return (
-    <section className="glass-panel p-8">
+    <section className="glass-panel fade-up p-7 lg:p-8">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Secure Access</p>
-        <h2 className="mt-2 text-3xl font-bold text-ink">Sign in to your workspace</h2>
-        <p className="mt-2 text-sm leading-7 text-slate-600">
-          JWT-authenticated access for admins, managers, and agents.
-        </p>
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-ink text-white shadow-glow">
+          <Building2 className="h-5 w-5" />
+        </div>
+        <p className="mt-6 text-xs font-semibold uppercase text-sea-700">Secure Access</p>
+        <h2 className="mt-2 text-3xl font-bold text-ink">Enter the deal room</h2>
+        <p className="mt-2 text-sm leading-7 text-slate-600">Tenant-scoped access for brokerage operations.</p>
       </div>
 
       <form className="mt-8 space-y-5" onSubmit={onSubmit}>
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-slate-700">Email</span>
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 focus-within:border-sea-400">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-sea-400 focus-within:ring-4 focus-within:ring-sea-200/50">
             <Mail className="h-4 w-4 text-slate-400" />
             <input
               type="email"
@@ -73,7 +74,7 @@ export function LoginForm() {
 
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-slate-700">Password</span>
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 focus-within:border-sea-400">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm transition focus-within:border-sea-400 focus-within:ring-4 focus-within:ring-sea-200/50">
             <LockKeyhole className="h-4 w-4 text-slate-400" />
             <input
               type="password"
@@ -84,13 +85,17 @@ export function LoginForm() {
           <p className="mt-2 text-xs text-rose-600">{form.formState.errors.password?.message}</p>
         </label>
 
-        {error ? <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
+        {error ? <div className="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
 
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? "Signing in..." : "Sign in"}
         </Button>
       </form>
+
+      <div className="mt-6 flex items-center gap-3 rounded-lg border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-sm text-slate-600">
+        <ShieldCheck className="h-4 w-4 text-sea-700" />
+        Sessions inherit company and role scope.
+      </div>
     </section>
   );
 }
-

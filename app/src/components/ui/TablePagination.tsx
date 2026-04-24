@@ -12,8 +12,8 @@ export function TablePagination({
   onNext: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between border-t border-slate-200/80 px-4 py-4">
-      <p className="text-sm text-slate-500">
+    <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-slate-50/60 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-medium text-slate-500">
         Page {page} of {totalPages}
       </p>
       <div className="flex gap-2">
@@ -27,4 +27,3 @@ export function TablePagination({
     </div>
   );
 }
-

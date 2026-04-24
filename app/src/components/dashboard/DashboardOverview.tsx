@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Activity, Building2, Sparkles, Target, Users2 } from "lucide-react";
+import { Activity, BadgeDollarSign, Building2, Gauge, Sparkles, Target, TrendingUp, Users2 } from "lucide-react";
 
 import type { AIAnalyzeResponse, AIChatResponse, DashboardStats, SessionUser } from "@real-estate-crm/shared";
 
@@ -33,6 +33,18 @@ export function DashboardOverview({
   const [query, setQuery] = useState("Need a 3 bedroom apartment in downtown under 500k");
   const [chatMessage, setChatMessage] = useState("Show me strong matches for buyers interested in premium downtown apartments.");
   const [isPending, startTransition] = useTransition();
+  const totalCommission = stats.agentPerformance.reduce((sum, agent) => sum + agent.totalCommission, 0);
+  const strongestAgent = stats.agentPerformance.reduce(
+    (best, agent) => (agent.conversionRate > best.conversionRate ? agent : best),
+    stats.agentPerformance[0] ?? {
+      userId: "none",
+      agentName: "No agents yet",
+      totalLeads: 0,
+      closedLeads: 0,
+      conversionRate: 0,
+      totalCommission: 0,
+    },
+  );
 
   async function runAnalyze() {
     startTransition(async () => {
@@ -74,7 +86,69 @@ export function DashboardOverview({
         eyebrow={company.slug}
         title={`${company.name} command dashboard`}
         description={`Live tenant-scoped performance visibility for ${currentUser.role.toLowerCase()} operations.`}
+        action={
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200/80 bg-white/[0.85] px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+            <Gauge className="h-4 w-4 text-sea-700" />
+            {formatPercent(stats.conversionRate)} close rate
+          </div>
+        }
       />
+
+      <section className="glass-panel fade-up stagger-1 overflow-hidden p-6">
+        <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr] xl:items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase text-sea-700">Executive pulse</p>
+            <h3 className="mt-2 text-3xl font-bold text-ink">Revenue, demand, and team momentum in one view.</h3>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+              The dashboard now surfaces the operating signals your team needs before jumping into leads or listings.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {[
+                { label: "Commission", value: formatCurrency(totalCommission), icon: BadgeDollarSign },
+                { label: "Top agent", value: strongestAgent.agentName, icon: TrendingUp },
+                { label: "Scope", value: currentUser.role.toLowerCase(), icon: Users2 },
+              ].map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div key={item.label} className="rounded-lg border border-slate-200/80 bg-white/80 p-4 shadow-sm">
+                    <Icon className="h-4 w-4 text-sea-700" />
+                    <p className="mt-3 text-xs font-semibold uppercase text-slate-500">{item.label}</p>
+                    <p className="mt-1 truncate text-lg font-bold text-ink">{item.value}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-200/80 bg-ink p-5 text-white shadow-lift">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-sea-100">Pipeline velocity</p>
+              <StatusBadge value="ACTIVE" />
+            </div>
+            <div className="mt-5 space-y-4">
+              {stats.pipeline.length > 0 ? (
+                stats.pipeline.map((stage) => {
+                  const width = stats.totalLeads === 0 ? 0 : Math.max(8, Math.round((stage.count / stats.totalLeads) * 100));
+
+                  return (
+                    <div key={stage.status}>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-200">{stage.status.replaceAll("_", " ").toLowerCase()}</span>
+                        <span className="font-semibold text-white">{stage.count}</span>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-full rounded-full bg-gradient-to-r from-sea-300 via-signal-blue to-gold-300" style={{ width: `${width}%` }} />
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-slate-300">Pipeline stages appear as leads enter the workspace.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="grid gap-4 xl:grid-cols-4">
         <StatCard
@@ -240,4 +314,3 @@ export function DashboardOverview({
     </div>
   );
 }
-

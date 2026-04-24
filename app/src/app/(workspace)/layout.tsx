@@ -22,12 +22,13 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   };
 
   return (
-    <div className="min-h-screen bg-transparent">
-      <div className="mx-auto flex min-h-screen max-w-[1600px] gap-6 px-4 py-4 lg:px-6">
+    <div className="relative min-h-screen overflow-hidden bg-transparent">
+      <div className="noise-overlay" />
+      <div className="relative mx-auto flex min-h-screen max-w-[1680px] gap-5 px-3 py-3 sm:px-4 lg:px-5">
         <WorkspaceSidebar user={workspaceUser} />
-        <div className="flex min-h-[calc(100vh-2rem)] flex-1 flex-col gap-6">
+        <div className="flex min-h-[calc(100vh-1.5rem)] min-w-0 flex-1 flex-col gap-5">
           <WorkspaceTopbar user={workspaceUser} />
-          <div className="flex-1">{children}</div>
+          <main className="fade-up flex-1 pb-3">{children}</main>
         </div>
       </div>
     </div>
