@@ -4,7 +4,20 @@ import Image from "next/image";
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, PencilLine, Save, SearchCode, Trash2 } from "lucide-react";
+import {
+  Bath,
+  BedDouble,
+  Camera,
+  MapPin,
+  PencilLine,
+  Ruler,
+  Save,
+  SearchCode,
+  Trash2,
+  UserRound,
+  Users2,
+  X,
+} from "lucide-react";
 
 import type { ApiListResponse, SessionUser } from "@real-estate-crm/shared";
 import { propertyCreateSchema, propertyStatuses } from "@real-estate-crm/shared";
@@ -69,6 +82,193 @@ const defaultPropertyValues: PropertyFormValues = {
   listedById: null,
 };
 
+function PropertyVisualCard({
+  property,
+  onOpen,
+}: {
+  property: PropertyRecord;
+  onOpen: () => void;
+}) {
+  const imageUrl = property.imageUrls[0];
+  const pricePerSqm = property.areaSqm > 0 ? Math.round(Number(property.price) / property.areaSqm) : null;
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group relative min-h-[300px] overflow-hidden rounded-lg border border-white/80 bg-slate-100 text-left shadow-crisp transition duration-300 hover:-translate-y-1 hover:shadow-lift focus:outline-none focus:ring-4 focus:ring-sea-200/60"
+    >
+      {imageUrl ? (
+        <Image
+          src={imageUrl}
+          alt={property.title}
+          fill
+          className="object-cover transition duration-500 group-hover:scale-105"
+          unoptimized
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-sea-50 to-gold-50" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-ink/88 via-ink/20 to-transparent" />
+      <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
+        <StatusBadge value={property.status} />
+        <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-ink shadow-sm">
+          {property._count.leads} {property._count.leads === 1 ? "Lead" : "Leads"}
+        </span>
+      </div>
+      <div className="absolute inset-x-4 bottom-4 text-white">
+        <p className="text-xl font-bold drop-shadow-sm">{property.title}</p>
+        <div className="mt-1 flex items-center gap-1 text-xs text-white/82">
+          <MapPin className="h-3.5 w-3.5" />
+          <span className="line-clamp-1">{property.address || property.location}</span>
+        </div>
+        <div className="mt-4 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-3xl font-bold leading-none">
+              {pricePerSqm ? `${formatCurrency(pricePerSqm)}` : formatCurrency(property.price)}
+              <span className="text-sm font-semibold text-white/75">{pricePerSqm ? "/sqm" : ""}</span>
+            </p>
+            <p className="mt-1 text-xs font-semibold uppercase text-white/70">{formatCurrency(property.price)} total</p>
+          </div>
+          <div className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-ink shadow-sm">{property.propertyType}</div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function PropertyDetailsPanel({
+  property,
+  currentUser,
+  onClose,
+  onEdit,
+  onDelete,
+}: {
+  property: PropertyRecord;
+  currentUser: SessionUser;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const imageUrl = property.imageUrls[0];
+  const pricePerSqm = property.areaSqm > 0 ? Math.round(Number(property.price) / property.areaSqm) : null;
+
+  return (
+    <aside className="glass-panel p-0">
+      <div className="relative min-h-[260px] overflow-hidden rounded-t-lg bg-slate-100">
+        {imageUrl ? (
+          <Image src={imageUrl} alt={property.title} fill className="object-cover" unoptimized />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-sea-50 to-gold-50" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-ink shadow-crisp transition hover:-translate-y-0.5 hover:bg-white"
+          aria-label="Close property details"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <div className="absolute bottom-5 left-5 right-5 text-white">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge value={property.status} />
+            <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-ink">{property.referenceCode}</span>
+          </div>
+          <h3 className="mt-3 text-3xl font-bold leading-tight">{property.title}</h3>
+          <p className="mt-2 flex items-center gap-2 text-sm text-white/82">
+            <MapPin className="h-4 w-4" />
+            {property.address || property.location}
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-5 p-5">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="metric-tile">
+            <p className="text-xs font-bold uppercase text-slate-500">Total price</p>
+            <p className="mt-2 text-2xl font-bold text-ink">{formatCurrency(property.price)}</p>
+          </div>
+          <div className="metric-tile">
+            <p className="text-xs font-bold uppercase text-slate-500">Per sqm</p>
+            <p className="mt-2 text-2xl font-bold text-ink">{pricePerSqm ? formatCurrency(pricePerSqm) : "N/A"}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "Beds", value: property.bedrooms, icon: BedDouble },
+            { label: "Baths", value: property.bathrooms, icon: Bath },
+            { label: "Sqm", value: property.areaSqm, icon: Ruler },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div key={item.label} className="rounded-lg border border-slate-200/80 bg-white/85 p-3 text-center shadow-sm">
+                <Icon className="mx-auto h-4 w-4 text-sea-700" />
+                <p className="mt-2 text-lg font-bold text-ink">{item.value}</p>
+                <p className="text-xs font-bold uppercase text-slate-500">{item.label}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div>
+          <p className="text-xs font-bold uppercase text-sea-700">Overview</p>
+          <p className="mt-2 text-sm leading-7 text-slate-600">{property.description}</p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="metric-tile flex items-center gap-3">
+            <div className="rounded-lg bg-sea-100 p-3">
+              <UserRound className="h-4 w-4 text-sea-700" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase text-slate-500">Listed by</p>
+              <p className="truncate text-sm font-semibold text-ink">{property.listedBy?.name ?? "Unassigned"}</p>
+            </div>
+          </div>
+          <div className="metric-tile flex items-center gap-3">
+            <div className="rounded-lg bg-gold-100 p-3">
+              <Users2 className="h-4 w-4 text-gold-700" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase text-slate-500">Demand</p>
+              <p className="text-sm font-semibold text-ink">{property._count.leads} active lead(s)</p>
+            </div>
+          </div>
+        </div>
+
+        {property.imageUrls.length > 1 ? (
+          <div>
+            <p className="text-xs font-bold uppercase text-slate-500">Gallery</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {property.imageUrls.slice(1, 4).map((url) => (
+                <div key={url} className="image-frame aspect-square">
+                  <Image src={url} alt={`${property.title} gallery`} fill className="object-cover" unoptimized />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200/80 pt-5">
+          <Button variant="secondary" onClick={onEdit}>
+            <PencilLine className="h-4 w-4" />
+            Edit listing
+          </Button>
+          {currentUser.role !== "AGENT" ? (
+            <Button variant="danger" onClick={onDelete}>
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 export function PropertyManagement({
   initialData,
   agents,
@@ -83,6 +283,7 @@ export function PropertyManagement({
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<PropertyRecord | null>(null);
   const [semanticQuery, setSemanticQuery] = useState("Waterfront villa with private pool and strong family layout");
   const [semanticMatches, setSemanticMatches] = useState<Array<Record<string, unknown>>>([]);
   const [uploading, setUploading] = useState(false);
@@ -111,8 +312,16 @@ export function PropertyManagement({
 
     const response = await fetch(`/api/properties?${params.toString()}`, { cache: "no-store" });
     const payload = await response.json();
-    setData(payload.data);
+    const nextData = payload.data as PropertyRecord[];
+    setData(nextData);
     setMeta(payload.meta);
+    setSelectedProperty((current) => {
+      if (!current) {
+        return null;
+      }
+
+      return nextData.find((property) => property.id === current.id) ?? null;
+    });
   }
 
   useEffect(() => {
@@ -181,6 +390,7 @@ export function PropertyManagement({
   function deleteProperty(propertyId: string) {
     startTransition(async () => {
       await fetch(`/api/properties/${propertyId}`, { method: "DELETE" });
+      setSelectedProperty((current) => (current?.id === propertyId ? null : current));
       if (editingPropertyId === propertyId) {
         resetEditor();
       }
@@ -309,69 +519,19 @@ export function PropertyManagement({
             </div>
           </div>
 
-          <div className="data-grid">
-            <div className="overflow-x-auto">
-              <table className="grid-table min-w-full">
-                <thead>
-                  <tr>
-                    <th>Listing</th>
-                    <th>Status</th>
-                    <th>Price</th>
-                    <th>Specs</th>
-                    <th>Agent</th>
-                    <th>Demand</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((property) => (
-                    <tr key={property.id} className="border-t border-slate-200/70">
-                      <td>
-                        <div className="flex gap-3">
-                          <div className="image-frame h-16 w-16 shrink-0">
-                            {property.imageUrls[0] ? (
-                              <Image src={property.imageUrls[0]} alt={property.title} fill className="object-cover" unoptimized />
-                            ) : null}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-slate-800">{property.title}</p>
-                            <p className="mt-1 text-xs text-slate-500">{property.referenceCode}</p>
-                            <p className="mt-2 text-xs text-slate-500">{property.location}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <StatusBadge value={property.status} />
-                      </td>
-                      <td>
-                        <p className="font-semibold text-slate-800">{formatCurrency(property.price)}</p>
-                        <p className="mt-1 text-xs text-slate-500">{property.propertyType}</p>
-                      </td>
-                      <td>
-                        <p>{property.bedrooms} bd / {property.bathrooms} ba</p>
-                        <p className="mt-1 text-xs text-slate-500">{property.areaSqm} sqm</p>
-                      </td>
-                      <td>{property.listedBy?.name ?? "Unassigned"}</td>
-                      <td>{property._count.leads} lead(s)</td>
-                      <td>
-                        <div className="flex flex-wrap gap-2">
-                          <Button variant="secondary" onClick={() => editProperty(property)}>
-                            <PencilLine className="h-4 w-4" />
-                            Edit
-                          </Button>
-                          {currentUser.role !== "AGENT" ? (
-                            <Button variant="danger" onClick={() => deleteProperty(property.id)}>
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </Button>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="glass-panel p-4 sm:p-5">
+            {data.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {data.map((property) => (
+                  <PropertyVisualCard key={property.id} property={property} onOpen={() => setSelectedProperty(property)} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/80 p-8 text-center">
+                <p className="text-sm font-semibold text-slate-700">No listings found</p>
+                <p className="mt-2 text-sm text-slate-500">Try a different search term or status filter.</p>
+              </div>
+            )}
             <TablePagination
               page={meta.page}
               totalPages={meta.totalPages}
@@ -551,6 +711,30 @@ export function PropertyManagement({
           </form>
         </div>
       </section>
+
+      {selectedProperty ? (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-ink/55 px-3 py-4 backdrop-blur-sm sm:px-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Property details"
+          onClick={() => setSelectedProperty(null)}
+        >
+          <div className="ml-auto w-full max-w-2xl" onClick={(event) => event.stopPropagation()}>
+            <PropertyDetailsPanel
+              property={selectedProperty}
+              currentUser={currentUser}
+              onClose={() => setSelectedProperty(null)}
+              onEdit={() => {
+                const property = selectedProperty;
+                setSelectedProperty(null);
+                editProperty(property);
+              }}
+              onDelete={() => deleteProperty(selectedProperty.id)}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
