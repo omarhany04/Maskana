@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import { Button } from "@/components/ui/Button";
 
 export function TablePagination({
@@ -12,16 +14,18 @@ export function TablePagination({
   onNext: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-slate-50/60 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm font-medium text-slate-500">
         Page {page} of {totalPages}
       </p>
       <div className="flex gap-2">
         <Button variant="secondary" onClick={onPrevious} disabled={page <= 1}>
+          <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
         <Button variant="secondary" onClick={onNext} disabled={page >= totalPages}>
           Next
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

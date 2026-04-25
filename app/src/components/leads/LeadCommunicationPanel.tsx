@@ -226,15 +226,15 @@ export function LeadCommunicationPanel({
   }
 
   return (
-    <div className="mt-6 rounded-3xl border border-slate-200/80 bg-slate-50/80 p-5">
+    <div className="professional-card mt-6 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-sea-100 p-3">
+            <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
               <MessageSquare className="h-5 w-5 text-sea-700" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Lead outreach</p>
+              <p className="text-xs font-bold uppercase text-sea-700">Lead outreach</p>
               <h3 className="mt-1 text-xl font-bold text-ink">Send email or WhatsApp without leaving the CRM</h3>
             </div>
           </div>
@@ -247,7 +247,7 @@ export function LeadCommunicationPanel({
           </p>
         </div>
 
-        <div className="grid gap-3 rounded-3xl border border-slate-200/80 bg-white/80 p-4 text-sm text-slate-600 md:min-w-[300px]">
+        <div className="metric-tile grid gap-3 text-sm text-slate-600 md:min-w-[300px]">
           <div className="flex items-center justify-between gap-3">
             <span className="font-medium text-slate-700">Lead</span>
             <span>{lead.fullName}</span>
@@ -278,7 +278,7 @@ export function LeadCommunicationPanel({
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="space-y-4 rounded-3xl border border-slate-200/80 bg-white/80 p-5">
+        <div className="space-y-4 rounded-lg border border-slate-200/80 bg-white/85 p-5 shadow-crisp">
           <div className="flex flex-wrap gap-3">
             <Button
               type="button"
@@ -286,7 +286,7 @@ export function LeadCommunicationPanel({
               disabled={!hasEmail}
               onClick={() => applyTemplate("EMAIL", templateKey)}
             >
-              <Mail className="mr-2 h-4 w-4" />
+              <Mail className="h-4 w-4" />
               Email
             </Button>
             <Button
@@ -295,7 +295,7 @@ export function LeadCommunicationPanel({
               disabled={!hasWhatsApp}
               onClick={() => applyTemplate("WHATSAPP", templateKey)}
             >
-              <MessageSquare className="mr-2 h-4 w-4" />
+              <MessageSquare className="h-4 w-4" />
               WhatsApp
             </Button>
           </div>
@@ -305,7 +305,7 @@ export function LeadCommunicationPanel({
             <select
               value={templateKey}
               onChange={(event) => applyTemplate(channel, event.target.value as OutreachTemplateKey)}
-              className="w-full rounded-2xl border-slate-200 bg-white text-sm"
+              className="w-full rounded-lg border-slate-200 bg-white text-sm"
             >
               {outreachTemplateOptions[channel].map((template) => (
                 <option key={template.key} value={template.key}>
@@ -321,7 +321,7 @@ export function LeadCommunicationPanel({
               <input
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
-                className="w-full rounded-2xl border-slate-200 bg-white text-sm"
+                className="w-full rounded-lg border-slate-200 bg-white text-sm"
               />
             </label>
           ) : null}
@@ -331,24 +331,24 @@ export function LeadCommunicationPanel({
             <textarea
               value={body}
               onChange={(event) => setBody(event.target.value)}
-              className="min-h-52 w-full rounded-2xl border-slate-200 bg-white text-sm"
+              className="min-h-52 w-full rounded-lg border-slate-200 bg-white text-sm"
             />
           </label>
 
           {!hasAvailableChannel ? (
-            <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="rounded-lg border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
               Add an email address or phone number to this lead before sending outreach.
             </div>
           ) : null}
 
           {channel === "WHATSAPP" && hasWhatsApp && hasValidWhatsApp && normalizedWhatsApp !== lead.phone ? (
-            <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
               We will automatically send this WhatsApp message using <code>{normalizedWhatsApp}</code>.
             </div>
           ) : null}
 
           {channel === "WHATSAPP" && hasWhatsApp && !hasValidWhatsApp ? (
-            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            <div className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-700">
               Update the lead phone to international format before sending on WhatsApp. Example: <code>+201093456760</code>
             </div>
           ) : null}
@@ -357,15 +357,15 @@ export function LeadCommunicationPanel({
             <div
               className={`rounded-2xl px-4 py-3 text-sm ${
                 feedback.toLowerCase().includes("unable") || feedback.toLowerCase().includes("required") || feedback.toLowerCase().includes("missing")
-                  ? "bg-rose-50 text-rose-700"
-                  : "bg-emerald-50 text-emerald-700"
+                  ? "border border-rose-100 bg-rose-50 text-rose-700"
+                  : "border border-emerald-100 bg-emerald-50 text-emerald-700"
               }`}
             >
               {feedback}
             </div>
           ) : null}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-sea-700" />
               Templates are fully editable before you send.
@@ -382,19 +382,19 @@ export function LeadCommunicationPanel({
                  (channel === "EMAIL" && !subject.trim())
                }
              >
-              <Send className="mr-2 h-4 w-4" />
+              <Send className="h-4 w-4" />
               {isSending ? "Sending..." : `Send ${channel === "EMAIL" ? "email" : "WhatsApp"}`}
             </Button>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5">
+        <div className="rounded-lg border border-slate-200/80 bg-white/85 p-5 shadow-crisp">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Communication history</p>
+              <p className="text-xs font-bold uppercase text-sea-700">Communication history</p>
               <h3 className="mt-1 text-xl font-bold text-ink">Recent outreach on this lead</h3>
             </div>
-            <div className="rounded-2xl bg-gold-100 p-3">
+            <div className="rounded-lg bg-gold-100 p-3 shadow-sm">
               <CalendarDays className="h-5 w-5 text-gold-700" />
             </div>
           </div>
@@ -402,7 +402,7 @@ export function LeadCommunicationPanel({
           {isLoadingHistory ? (
             <p className="mt-5 text-sm text-slate-500">Loading communication history...</p>
           ) : historyError ? (
-            <div className="mt-5 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{historyError}</div>
+            <div className="mt-5 rounded-lg border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{historyError}</div>
           ) : messages.length > 0 ? (
             <div className="mt-5 space-y-3">
               {messages.map((message) => {
@@ -412,11 +412,11 @@ export function LeadCommunicationPanel({
                 const providerStatus = formatProviderStatus(getMetadataValue(message.metadata, "providerStatus"));
 
                 return (
-                  <div key={message.id} className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
+                  <div key={message.id} className="metric-tile">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <StatusBadge value={message.channel} />
-                        <span className="text-xs uppercase tracking-[0.18em] text-slate-500">{message.direction}</span>
+                        <span className="text-xs font-bold uppercase text-slate-500">{message.direction}</span>
                       </div>
                       <span className="text-xs text-slate-500">{formatMessageDate(message.createdAt)}</span>
                     </div>
@@ -433,7 +433,7 @@ export function LeadCommunicationPanel({
               })}
             </div>
           ) : (
-            <div className="mt-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50/60 p-5 text-sm text-slate-500">
+            <div className="mt-5 rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-5 text-sm text-slate-500">
               No email or WhatsApp messages have been sent to this lead yet.
             </div>
           )}

@@ -1,15 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useDeferredValue, useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bot, Filter, MessageSquare, Save, Sparkles, Trash2, UserPlus2 } from "lucide-react";
+import { Bot, Filter, MessageSquare, PencilLine, Save, Sparkles, Trash2, UserPlus2 } from "lucide-react";
 
 import type { ApiListResponse, SessionUser } from "@real-estate-crm/shared";
 import { leadCreateSchema, leadStatuses } from "@real-estate-crm/shared";
 
 import { Button } from "@/components/ui/Button";
-import { LeadCommunicationPanel } from "@/components/leads/LeadCommunicationPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TablePagination } from "@/components/ui/TablePagination";
@@ -81,13 +81,11 @@ const defaultLeadValues: LeadFormValues = {
 };
 
 export function LeadManagement({
-  companyName,
   initialData,
   agents,
   currentUser,
   properties,
 }: {
-  companyName: string;
   initialData: ApiListResponse<LeadRecord>;
   agents: Array<{ id: string; name: string; role: string }>;
   currentUser: SessionUser;
@@ -99,7 +97,6 @@ export function LeadManagement({
   const [statusFilter, setStatusFilter] = useState("");
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [editingLeadId, setEditingLeadId] = useState<string | null>(null);
-  const [communicationLead, setCommunicationLead] = useState<LeadRecord | null>(null);
   const [insightQuery, setInsightQuery] = useState("Investor looking for luxury villa in North Coast under $1.2M");
   const [insightResult, setInsightResult] = useState<string>("");
   const [semanticMatches, setSemanticMatches] = useState<Array<Record<string, unknown>>>([]);
@@ -153,14 +150,12 @@ export function LeadManagement({
 
   function resetEditor() {
     setEditingLeadId(null);
-    setCommunicationLead(null);
     setFormMessage(null);
     form.reset(defaultLeadValues);
   }
 
   function startEditing(lead: LeadRecord) {
     setEditingLeadId(lead.id);
-    setCommunicationLead(lead);
     setFormMessage(null);
     form.reset({
       fullName: lead.fullName,
@@ -262,6 +257,7 @@ export function LeadManagement({
         description="Capture, qualify, assign, and advance leads with tenant-aware visibility, AI scoring, and built-in outreach."
         action={
           <Button onClick={resetEditor} variant={editingLeadId ? "secondary" : "primary"}>
+            <UserPlus2 className="h-4 w-4" />
             {editingLeadId ? "Create new lead" : "Ready to create"}
           </Button>
         }
@@ -272,7 +268,7 @@ export function LeadManagement({
           <div className="glass-panel p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-sea-100 p-3">
+                <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
                   <Filter className="h-5 w-5 text-sea-700" />
                 </div>
                 <div>
@@ -285,12 +281,12 @@ export function LeadManagement({
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search leads"
-                  className="rounded-2xl border-slate-200 bg-white text-sm"
+                  className="rounded-lg border-slate-200 bg-white text-sm"
                 />
                 <select
                   value={statusFilter}
                   onChange={(event) => setStatusFilter(event.target.value)}
-                  className="rounded-2xl border-slate-200 bg-white text-sm"
+                  className="rounded-lg border-slate-200 bg-white text-sm"
                 >
                   <option value="">All statuses</option>
                   {leadStatuses.map((status) => (
@@ -303,7 +299,7 @@ export function LeadManagement({
                   <select
                     value={assignedToFilter}
                     onChange={(event) => setAssignedToFilter(event.target.value)}
-                    className="rounded-2xl border-slate-200 bg-white text-sm"
+                    className="rounded-lg border-slate-200 bg-white text-sm"
                   >
                     <option value="">All agents</option>
                     {agents.map((agent) => (
@@ -348,7 +344,7 @@ export function LeadManagement({
                         <select
                           value={lead.status}
                           onChange={(event) => changeStatus(lead.id, event.target.value)}
-                          className="w-full rounded-2xl border-slate-200 bg-white text-xs"
+                          className="w-full rounded-lg border-slate-200 bg-white text-xs"
                         >
                           {leadStatuses.map((status) => (
                             <option key={status} value={status}>
@@ -367,7 +363,7 @@ export function LeadManagement({
                           <select
                             value={lead.assignedTo?.id ?? ""}
                             onChange={(event) => event.target.value && assignLeadToAgent(lead.id, event.target.value)}
-                            className="w-full rounded-2xl border-slate-200 bg-white text-xs"
+                            className="w-full rounded-lg border-slate-200 bg-white text-xs"
                           >
                             <option value="">Assign agent</option>
                             {agents.map((agent) => (
@@ -393,15 +389,20 @@ export function LeadManagement({
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-2">
-                          <Button onClick={() => startEditing(lead)}>
-                            <MessageSquare className="mr-2 h-4 w-4" />
+                          <Link
+                            href={`/leads/${lead.id}/messages`}
+                            className="inline-flex min-h-10 items-center justify-center gap-2 overflow-hidden rounded-lg bg-ink px-4 py-2.5 text-sm font-bold text-white shadow-glow transition duration-200 hover:-translate-y-0.5 hover:bg-slate-950 hover:shadow-lift focus:outline-none focus:ring-4 focus:ring-sea-200/60"
+                          >
+                            <MessageSquare className="h-4 w-4" />
                             Message
-                          </Button>
+                          </Link>
                           <Button variant="secondary" onClick={() => startEditing(lead)}>
+                            <PencilLine className="h-4 w-4" />
                             Edit
                           </Button>
                           {currentUser.role !== "AGENT" ? (
                             <Button variant="danger" onClick={() => removeLead(lead.id)}>
+                              <Trash2 className="h-4 w-4" />
                               Delete
                             </Button>
                           ) : null}
@@ -423,34 +424,35 @@ export function LeadManagement({
           <div className="glass-panel p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Lead intelligence</p>
+              <p className="text-xs font-bold uppercase text-sea-700">Lead intelligence</p>
                 <h3 className="mt-2 text-xl font-bold text-ink">AI lead routing preview</h3>
               </div>
-              <div className="rounded-2xl bg-gold-100 p-3">
+              <div className="rounded-lg bg-gold-100 p-3 shadow-sm">
                 <Bot className="h-5 w-5 text-gold-700" />
               </div>
             </div>
             <textarea
               value={insightQuery}
               onChange={(event) => setInsightQuery(event.target.value)}
-              className="mt-5 min-h-28 w-full rounded-3xl border-slate-200 bg-white text-sm"
+              className="mt-5 min-h-28 w-full rounded-lg border-slate-200 bg-white text-sm"
             />
             <div className="mt-4 flex justify-end">
               <Button onClick={runInsightActions} disabled={isPending}>
+                <Bot className="h-4 w-4" />
                 Run AI routing
               </Button>
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Analysis</p>
+              <div className="metric-tile">
+                <p className="text-xs font-bold uppercase text-slate-500">Analysis</p>
                 <p className="mt-3 text-sm leading-7 text-slate-700">{insightResult || "Intent extraction appears here."}</p>
               </div>
-              <div className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Matched listings</p>
+              <div className="metric-tile">
+                <p className="text-xs font-bold uppercase text-slate-500">Matched listings</p>
                 <div className="mt-3 space-y-3">
                   {semanticMatches.length > 0 ? (
                     semanticMatches.map((match, index) => (
-                      <div key={`${String(match.id)}-${index}`} className="rounded-2xl bg-white p-3">
+                      <div key={`${String(match.id)}-${index}`} className="rounded-lg bg-white p-3">
                         <p className="font-semibold text-slate-700">{String(match.title ?? "Untitled")}</p>
                         <p className="text-xs text-slate-500">{String(match.location ?? "Unknown location")}</p>
                       </div>
@@ -467,14 +469,14 @@ export function LeadManagement({
         <div className="glass-panel p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">
+              <p className="text-xs font-bold uppercase text-sea-700">
                 {editingLeadId ? "Update lead" : "Create lead"}
               </p>
               <h3 className="mt-2 text-2xl font-bold text-ink">
                 {editingLeadId ? "Edit qualification profile and outreach" : "Capture a new opportunity"}
               </h3>
             </div>
-            <div className="rounded-2xl bg-sea-100 p-3">
+            <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
               <UserPlus2 className="h-5 w-5 text-sea-700" />
             </div>
           </div>
@@ -605,13 +607,13 @@ export function LeadManagement({
                 </Button>
               ) : null}
               <Button type="submit" disabled={isPending}>
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="h-4 w-4" />
                 {editingLeadId ? "Save changes" : "Create lead"}
               </Button>
             </div>
           </form>
 
-          <div className="mt-6 rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
+          <div className="mt-6 metric-tile">
             <div className="flex items-center gap-3">
               <Sparkles className="h-4 w-4 text-sea-700" />
               <p className="text-sm font-semibold text-slate-700">Lead scoring is refreshed on create and update.</p>
@@ -628,15 +630,6 @@ export function LeadManagement({
             </div>
           )}
 
-          {communicationLead ? (
-            <LeadCommunicationPanel
-              companyName={companyName}
-              lead={communicationLead}
-              onSent={async () => {
-                await loadLeads(meta.page);
-              }}
-            />
-          ) : null}
         </div>
       </section>
     </div>

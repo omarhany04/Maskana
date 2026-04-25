@@ -87,17 +87,17 @@ export function DashboardOverview({
         title={`${company.name} command dashboard`}
         description={`Live tenant-scoped performance visibility for ${currentUser.role.toLowerCase()} operations.`}
         action={
-          <div className="flex items-center gap-3 rounded-lg border border-slate-200/80 bg-white/[0.85] px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+          <div className="metric-tile flex items-center gap-3 text-sm font-bold text-slate-700">
             <Gauge className="h-4 w-4 text-sea-700" />
             {formatPercent(stats.conversionRate)} close rate
           </div>
         }
       />
 
-      <section className="glass-panel fade-up stagger-1 overflow-hidden p-6">
+      <section className="glass-panel fade-up stagger-1 p-5 sm:p-6">
         <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr] xl:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase text-sea-700">Executive pulse</p>
+            <p className="text-xs font-bold uppercase text-sea-700">Executive pulse</p>
             <h3 className="mt-2 text-3xl font-bold text-ink">Revenue, demand, and team momentum in one view.</h3>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
               The dashboard now surfaces the operating signals your team needs before jumping into leads or listings.
@@ -111,18 +111,19 @@ export function DashboardOverview({
                 const Icon = item.icon;
 
                 return (
-                  <div key={item.label} className="rounded-lg border border-slate-200/80 bg-white/80 p-4 shadow-sm">
+                  <div key={item.label} className="metric-tile">
                     <Icon className="h-4 w-4 text-sea-700" />
-                    <p className="mt-3 text-xs font-semibold uppercase text-slate-500">{item.label}</p>
+                    <p className="mt-3 text-xs font-bold uppercase text-slate-500">{item.label}</p>
                     <p className="mt-1 truncate text-lg font-bold text-ink">{item.value}</p>
                   </div>
                 );
               })}
             </div>
           </div>
-          <div className="rounded-lg border border-slate-200/80 bg-ink p-5 text-white shadow-lift">
+          <div className="relative overflow-hidden rounded-lg border border-white/10 bg-ink p-5 text-white shadow-lift">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-sea-300 via-gold-300 to-signal-violet" />
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-sea-100">Pipeline velocity</p>
+              <p className="text-sm font-bold text-sea-100">Pipeline velocity</p>
               <StatusBadge value="ACTIVE" />
             </div>
             <div className="mt-5 space-y-4">
@@ -185,11 +186,11 @@ export function DashboardOverview({
         <PerformanceChart stats={stats} />
 
         <div className="glass-panel p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Pipeline health</p>
+          <p className="text-xs font-bold uppercase text-sea-700">Pipeline health</p>
           <h3 className="mt-2 text-2xl font-bold text-ink">Stage distribution</h3>
           <div className="mt-6 space-y-4">
             {stats.pipeline.map((stage) => (
-              <div key={stage.status} className="rounded-2xl border border-slate-200/80 bg-white/80 p-4">
+              <div key={stage.status} className="metric-tile">
                 <div className="flex items-center justify-between">
                   <StatusBadge value={stage.status} />
                   <span className="text-2xl font-bold text-ink">{stage.count}</span>
@@ -204,7 +205,7 @@ export function DashboardOverview({
         <div className="glass-panel p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">AI command suite</p>
+              <p className="text-xs font-bold uppercase text-sea-700">AI command suite</p>
               <h3 className="mt-2 text-2xl font-bold text-ink">Analyze, search, and respond</h3>
             </div>
             <div className="rounded-2xl bg-sea-100 p-3">
@@ -213,26 +214,28 @@ export function DashboardOverview({
           </div>
 
           <div className="mt-6 space-y-5">
-            <div className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
+            <div className="professional-card p-4">
               <label className="text-sm font-medium text-slate-700">Natural language query</label>
               <textarea
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                className="mt-3 min-h-28 w-full rounded-2xl border-slate-200 bg-white text-sm"
+                className="mt-3 min-h-28 w-full rounded-lg border-slate-200 bg-white text-sm"
               />
               <div className="mt-4 flex flex-wrap gap-3">
                 <Button onClick={runAnalyze} disabled={isPending}>
+                  <Sparkles className="h-4 w-4" />
                   Analyze query
                 </Button>
                 <Button variant="secondary" onClick={runSemanticSearch} disabled={isPending}>
+                  <Target className="h-4 w-4" />
                   Semantic search
                 </Button>
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Structured intent</p>
+              <div className="metric-tile">
+                <p className="text-xs font-bold uppercase text-slate-500">Structured intent</p>
                 {analysisResult ? (
                   <div className="mt-4 space-y-3 text-sm text-slate-700">
                     <div className="flex justify-between gap-3">
@@ -257,12 +260,12 @@ export function DashboardOverview({
                 )}
               </div>
 
-              <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Semantic matches</p>
+              <div className="metric-tile">
+                <p className="text-xs font-bold uppercase text-slate-500">Semantic matches</p>
                 {semanticMatches.length > 0 ? (
                   <div className="mt-4 space-y-3">
                     {semanticMatches.map((match, index) => (
-                      <div key={`${String(match.id)}-${index}`} className="rounded-2xl bg-slate-50 p-3">
+                      <div key={`${String(match.id)}-${index}`} className="rounded-lg bg-slate-50 p-3">
                         <p className="font-semibold text-slate-700">{String(match.title ?? "Untitled")}</p>
                         <p className="mt-1 text-xs text-slate-500">{String(match.location ?? "Unknown location")}</p>
                       </div>
@@ -277,28 +280,29 @@ export function DashboardOverview({
         </div>
 
         <div className="glass-panel p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Chat workflow</p>
+          <p className="text-xs font-bold uppercase text-sea-700">Chat workflow</p>
           <h3 className="mt-2 text-2xl font-bold text-ink">RAG-ready assistant panel</h3>
           <textarea
             value={chatMessage}
             onChange={(event) => setChatMessage(event.target.value)}
-            className="mt-5 min-h-32 w-full rounded-3xl border-slate-200 bg-white text-sm"
+            className="mt-5 min-h-32 w-full rounded-lg border-slate-200 bg-white text-sm"
           />
           <div className="mt-4 flex justify-end">
             <Button onClick={runChat} disabled={isPending}>
+              <Sparkles className="h-4 w-4" />
               Generate response
             </Button>
           </div>
 
           {chatResult ? (
             <div className="mt-6 space-y-4">
-              <div className="rounded-3xl bg-ink p-5 text-sm leading-7 text-slate-100">{chatResult.answer}</div>
+              <div className="rounded-lg bg-ink p-5 text-sm leading-7 text-slate-100 shadow-lift">{chatResult.answer}</div>
               <div className="space-y-3">
                 {chatResult.references.map((reference) => (
-                  <div key={reference.propertyId} className="rounded-2xl border border-slate-200/80 bg-white/70 p-4">
+                  <div key={reference.propertyId} className="metric-tile">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold text-slate-700">{reference.title}</p>
-                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-sea-700">
+                      <span className="text-xs font-bold uppercase text-sea-700">
                         {reference.score.toFixed(2)}
                       </span>
                     </div>

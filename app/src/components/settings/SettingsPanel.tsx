@@ -96,10 +96,10 @@ export function SettingsPanel({
           <div className="glass-panel p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Tenant record</p>
+                <p className="text-xs font-bold uppercase text-sea-700">Tenant record</p>
                 <h3 className="mt-2 text-2xl font-bold text-ink">{company.name}</h3>
               </div>
-              <div className="rounded-2xl bg-sea-100 p-3">
+              <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
                 <Settings2 className="h-5 w-5 text-sea-700" />
               </div>
             </div>
@@ -120,7 +120,7 @@ export function SettingsPanel({
           </div>
 
           <div className="glass-panel p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Integration surface</p>
+            <p className="text-xs font-bold uppercase text-sea-700">Integration surface</p>
             <h3 className="mt-2 text-2xl font-bold text-ink">Provider readiness</h3>
             <p className="mt-2 text-sm leading-7 text-slate-500">
               Email and WhatsApp are now part of the live lead workflow in the Leads page, not just passive provider checks.
@@ -131,9 +131,9 @@ export function SettingsPanel({
                 const enabled = integrations[item.key];
 
                 return (
-                  <div key={item.key} className="flex items-center justify-between rounded-3xl border border-slate-200/80 bg-slate-50/70 p-4">
+                  <div key={item.key} className="metric-tile flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="rounded-2xl bg-white p-3 shadow-sm">
+                      <div className="rounded-lg bg-white p-3 shadow-sm">
                         <Icon className="h-4 w-4 text-sea-700" />
                       </div>
                       <div>
@@ -152,11 +152,11 @@ export function SettingsPanel({
         <div className="glass-panel p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">Company settings</p>
+              <p className="text-xs font-bold uppercase text-sea-700">Company settings</p>
               <h3 className="mt-2 text-2xl font-bold text-ink">Brand, locale, and operating defaults</h3>
             </div>
             <div
-              className="h-12 w-12 rounded-2xl border border-white/80"
+              className="h-12 w-12 rounded-lg border border-white/80 shadow-crisp"
               style={{ backgroundColor: form.watch("brandColor") }}
             />
           </div>
@@ -206,7 +206,7 @@ export function SettingsPanel({
             </div>
 
             {feedback ? (
-              <div className={`rounded-2xl px-4 py-3 text-sm ${feedback === "Settings saved." ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+              <div className={`rounded-lg border px-4 py-3 text-sm ${feedback === "Settings saved." ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-rose-100 bg-rose-50 text-rose-700"}`}>
                 {feedback}
               </div>
             ) : null}
@@ -214,12 +214,12 @@ export function SettingsPanel({
             {canEdit ? (
               <div className="flex justify-end">
                 <Button type="submit" disabled={isPending}>
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="h-4 w-4" />
                   Save settings
                 </Button>
               </div>
             ) : (
-              <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+              <div className="rounded-lg border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm text-slate-500">
                 Agents can view settings but only managers and admins can update them.
               </div>
             )}

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function LeadsPage() {
   const ctx = await getTenantContext();
-  const [initialData, agents, properties, company] = await Promise.all([
+  const [initialData, agents, properties] = await Promise.all([
     listLeads(ctx, { page: 1, limit: 10 }),
     prisma.user.findMany({
       where: {
@@ -38,19 +38,10 @@ export default async function LeadsPage() {
         title: "asc",
       },
     }),
-    prisma.company.findUniqueOrThrow({
-      where: {
-        id: ctx.companyId,
-      },
-      select: {
-        name: true,
-      },
-    }),
   ]);
 
   return (
     <LeadManagement
-      companyName={company.name}
       initialData={JSON.parse(JSON.stringify(initialData))}
       agents={JSON.parse(JSON.stringify(agents))}
       currentUser={ctx}

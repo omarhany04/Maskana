@@ -113,11 +113,12 @@ class PropertyVectorStore:
             self._embeddings,
             allow_dangerous_deserialization=True,
         )
-        matches = store.similarity_search_with_relevance_scores(query, k=limit)
+        matches = store.similarity_search_with_score(query, k=limit)
 
         results: list[SearchMatch] = []
-        for document, relevance in matches:
+        for document, distance in matches:
             metadata = document.metadata
+            score = 1 / (1 + max(float(distance), 0))
             results.append(
                 SearchMatch(
                     id=str(metadata["id"]),
@@ -128,7 +129,7 @@ class PropertyVectorStore:
                     propertyType=str(metadata["propertyType"]),
                     price=float(metadata["price"]),
                     referenceCode=str(metadata["referenceCode"]),
-                    score=float(relevance),
+                    score=score,
                     metadata=metadata,
                 )
             )
@@ -137,4 +138,3 @@ class PropertyVectorStore:
 
 
 property_vector_store = PropertyVectorStore()
-

@@ -9,7 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 export function PerformanceChart({ stats }: { stats: DashboardStats }) {
   return (
     <div className="glass-panel fade-up stagger-2 p-6">
-      <p className="text-xs font-semibold uppercase text-sea-700">Performance graph</p>
+      <p className="text-xs font-bold uppercase text-sea-700">Performance graph</p>
       <h3 className="mt-2 text-2xl font-bold text-ink">Agent close rate and commission</h3>
       <div className="mt-6 h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -32,7 +32,7 @@ export function PerformanceChart({ stats }: { stats: DashboardStats }) {
               contentStyle={{
                 borderRadius: "8px",
                 border: "1px solid rgba(226, 232, 240, 0.9)",
-                boxShadow: "0 20px 40px -20px rgba(15, 23, 42, 0.28)",
+                boxShadow: "0 20px 44px -24px rgba(15, 23, 42, 0.34)",
               }}
               formatter={(value: number, name: string) =>
                 name === "totalCommission" ? formatCurrency(value) : value.toFixed(1)

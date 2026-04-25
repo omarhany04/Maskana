@@ -24,12 +24,21 @@ INTENT_KEYWORDS: dict[Literal["buy", "rent", "sell", "invest"], tuple[str, ...]]
     "invest": ("invest", "yield", "roi", "return"),
 }
 
+LOCATION_STOP_PATTERN = re.compile(
+    r"\b(?:"
+    r"under|below|max|maximum|budget|up\s+to|less\s+than|no\s+more\s+than|"
+    r"over|above|min|minimum|with|for|and|or|"
+    r"bed|beds|bedroom|bedrooms|bath|baths|bathroom|bathrooms"
+    r")\b",
+    re.IGNORECASE,
+)
+
 
 def _extract_budget(text: str) -> int | None:
     normalized = text.lower().replace(",", "")
 
     patterns = [
-        r"(?:under|below|max|budget|up to)\s*\$?(\d+(?:\.\d+)?)\s*(m|million|k|thousand)?",
+        r"(?:under|below|max|maximum|budget|up to|less than|no more than)\s*(?:than\s*)?\$?(\d+(?:\.\d+)?)\s*(m|million|k|thousand)?",
         r"\$?(\d+(?:\.\d+)?)\s*(m|million|k|thousand)",
     ]
 
@@ -53,11 +62,17 @@ def _extract_budget(text: str) -> int | None:
 
 
 def _extract_location(text: str) -> str | None:
-    match = re.search(r"(?:in|at|near)\s+([a-zA-Z][a-zA-Z\s-]{2,})", text)
+    match = re.search(r"\b(?:in|at|near)\s+([a-zA-Z][a-zA-Z\s-]{2,})", text, re.IGNORECASE)
     if not match:
         return None
 
-    return match.group(1).strip().title()
+    candidate = match.group(1).strip()
+    stop_match = LOCATION_STOP_PATTERN.search(candidate)
+    if stop_match:
+        candidate = candidate[: stop_match.start()].strip()
+
+    candidate = candidate.strip(" ,-")
+    return candidate.title() if candidate else None
 
 
 def _extract_property_type(text: str) -> str | None:
@@ -69,9 +84,9 @@ def _extract_property_type(text: str) -> str | None:
 
 
 def _extract_intent(text: str) -> Literal["buy", "rent", "sell", "invest", "unknown"]:
-    lowered = text.lower()
+    tokens = set(re.findall(r"[a-z0-9]+", text.lower()))
     for intent, keywords in INTENT_KEYWORDS.items():
-        if any(keyword in lowered for keyword in keywords):
+        if any(keyword in tokens for keyword in keywords):
             return intent
     return "unknown"
 

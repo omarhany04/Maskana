@@ -3,7 +3,7 @@
 import { useDeferredValue, useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Save, ShieldCheck, Trash2, UserCog2 } from "lucide-react";
+import { PencilLine, Save, ShieldCheck, Trash2, UserCog2 } from "lucide-react";
 import { z } from "zod";
 
 import type { ApiListResponse, SessionUser } from "@real-estate-crm/shared";
@@ -169,21 +169,26 @@ export function UserManagement({
         <div className="space-y-6">
           <div className="glass-panel p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-ink">Company roster</h3>
-                <p className="mt-1 text-sm text-slate-600">Admin-only CRUD for users, roles, and account status.</p>
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
+                  <ShieldCheck className="h-5 w-5 text-sea-700" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-ink">Company roster</h3>
+                  <p className="mt-1 text-sm text-slate-600">Admin-only CRUD for users, roles, and account status.</p>
+                </div>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search users"
-                  className="rounded-2xl border-slate-200 bg-white text-sm"
+                  className="rounded-lg border-slate-200 bg-white text-sm"
                 />
                 <select
                   value={roleFilter}
                   onChange={(event) => setRoleFilter(event.target.value)}
-                  className="rounded-2xl border-slate-200 bg-white text-sm"
+                  className="rounded-lg border-slate-200 bg-white text-sm"
                 >
                   <option value="">All roles</option>
                   {roles.map((role) => (
@@ -228,6 +233,7 @@ export function UserManagement({
                       <td>
                         <div className="flex flex-wrap gap-2">
                           <Button variant="secondary" onClick={() => editUser(user)}>
+                            <PencilLine className="h-4 w-4" />
                             Edit
                           </Button>
                           <Button
@@ -235,6 +241,7 @@ export function UserManagement({
                             onClick={() => removeUser(user.id)}
                             disabled={user.id === currentUser.id}
                           >
+                            <Trash2 className="h-4 w-4" />
                             Delete
                           </Button>
                         </div>
@@ -256,14 +263,14 @@ export function UserManagement({
         <div className="glass-panel p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">
+              <p className="text-xs font-bold uppercase text-sea-700">
                 {editingUserId ? "Update member" : "Invite member"}
               </p>
               <h3 className="mt-2 text-2xl font-bold text-ink">
                 {editingUserId ? "Edit role and access" : "Create a tenant user"}
               </h3>
             </div>
-            <div className="rounded-2xl bg-sea-100 p-3">
+            <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
               <UserCog2 className="h-5 w-5 text-sea-700" />
             </div>
           </div>
@@ -306,12 +313,12 @@ export function UserManagement({
               </label>
             </div>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 text-sm text-slate-700">
+            <label className="flex items-center gap-3 rounded-lg border border-slate-200/80 bg-slate-50/70 px-4 py-3 text-sm text-slate-700">
               <input type="checkbox" className="rounded border-slate-300 text-sea-600" {...form.register("isActive")} />
               Account is active and allowed to sign in
             </label>
 
-            {feedback ? <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{feedback}</div> : null}
+            {feedback ? <div className="rounded-lg border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{feedback}</div> : null}
 
             <div className="flex flex-wrap justify-end gap-3">
               {editingUserId ? (
@@ -320,13 +327,13 @@ export function UserManagement({
                 </Button>
               ) : null}
               <Button type="submit" disabled={isPending}>
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="h-4 w-4" />
                 {editingUserId ? "Save user" : "Create user"}
               </Button>
             </div>
           </form>
 
-          <div className="mt-6 rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
+          <div className="mt-6 metric-tile">
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-4 w-4 text-sea-700" />
               <p className="text-sm font-semibold text-slate-700">JWT sessions inherit role and company scope.</p>

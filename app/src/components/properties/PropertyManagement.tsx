@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useDeferredValue, useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Save, SearchCode, Trash2 } from "lucide-react";
+import { Camera, PencilLine, Save, SearchCode, Trash2 } from "lucide-react";
 
 import type { ApiListResponse, SessionUser } from "@real-estate-crm/shared";
 import { propertyCreateSchema, propertyStatuses } from "@real-estate-crm/shared";
@@ -251,27 +251,38 @@ export function PropertyManagement({
         eyebrow="Property inventory"
         title="Listing operations and media workflow"
         description="Manage catalog, upload S3-hosted property media, and preview AI semantic search against the vector index."
+        action={
+          <Button onClick={resetEditor} variant={editingPropertyId ? "secondary" : "primary"}>
+            <Camera className="h-4 w-4" />
+            {editingPropertyId ? "Create listing" : "New listing"}
+          </Button>
+        }
       />
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-6">
           <div className="glass-panel p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-ink">Listing directory</h3>
-                <p className="mt-1 text-sm text-slate-600">Tenant-filtered listings with assignment, pricing, and lead demand context.</p>
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
+                  <SearchCode className="h-5 w-5 text-sea-700" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-ink">Listing directory</h3>
+                  <p className="mt-1 text-sm text-slate-600">Tenant-filtered listings with assignment, pricing, and lead demand context.</p>
+                </div>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search listings"
-                  className="rounded-2xl border-slate-200 bg-white text-sm"
+                  className="rounded-lg border-slate-200 bg-white text-sm"
                 />
                 <select
                   value={statusFilter}
                   onChange={(event) => setStatusFilter(event.target.value)}
-                  className="rounded-2xl border-slate-200 bg-white text-sm"
+                  className="rounded-lg border-slate-200 bg-white text-sm"
                 >
                   <option value="">All statuses</option>
                   {propertyStatuses.map((status) => (
@@ -303,7 +314,7 @@ export function PropertyManagement({
                     <tr key={property.id} className="border-t border-slate-200/70">
                       <td>
                         <div className="flex gap-3">
-                          <div className="relative h-16 w-16 overflow-hidden rounded-2xl bg-slate-100">
+                          <div className="image-frame h-16 w-16 shrink-0">
                             {property.imageUrls[0] ? (
                               <Image src={property.imageUrls[0]} alt={property.title} fill className="object-cover" unoptimized />
                             ) : null}
@@ -331,10 +342,12 @@ export function PropertyManagement({
                       <td>
                         <div className="flex flex-wrap gap-2">
                           <Button variant="secondary" onClick={() => editProperty(property)}>
+                            <PencilLine className="h-4 w-4" />
                             Edit
                           </Button>
                           {currentUser.role !== "AGENT" ? (
                             <Button variant="danger" onClick={() => deleteProperty(property.id)}>
+                              <Trash2 className="h-4 w-4" />
                               Delete
                             </Button>
                           ) : null}
@@ -356,27 +369,28 @@ export function PropertyManagement({
           <div className="glass-panel p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">AI listing search</p>
+                <p className="text-xs font-bold uppercase text-sea-700">AI listing search</p>
                 <h3 className="mt-2 text-xl font-bold text-ink">Semantic property match preview</h3>
               </div>
-              <div className="rounded-2xl bg-sea-100 p-3">
+              <div className="rounded-lg bg-sea-100 p-3 shadow-sm">
                 <SearchCode className="h-5 w-5 text-sea-700" />
               </div>
             </div>
             <textarea
               value={semanticQuery}
               onChange={(event) => setSemanticQuery(event.target.value)}
-              className="mt-5 min-h-24 w-full rounded-3xl border-slate-200 bg-white text-sm"
+              className="mt-5 min-h-24 w-full rounded-lg border-slate-200 bg-white text-sm"
             />
             <div className="mt-4 flex justify-end">
               <Button onClick={runSemanticSearch} disabled={isPending}>
+                <SearchCode className="h-4 w-4" />
                 Run search
               </Button>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {semanticMatches.length > 0 ? (
                 semanticMatches.map((match, index) => (
-                  <div key={`${String(match.id)}-${index}`} className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-4">
+                  <div key={`${String(match.id)}-${index}`} className="metric-tile">
                     <p className="font-semibold text-slate-700">{String(match.title ?? "Untitled")}</p>
                     <p className="mt-1 text-xs text-slate-500">{String(match.location ?? "Unknown location")}</p>
                     <p className="mt-2 text-sm text-slate-600">{String(match.description ?? "").slice(0, 110)}</p>
@@ -392,14 +406,14 @@ export function PropertyManagement({
         <div className="glass-panel p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sea-700">
+              <p className="text-xs font-bold uppercase text-sea-700">
                 {editingPropertyId ? "Update listing" : "Create listing"}
               </p>
               <h3 className="mt-2 text-2xl font-bold text-ink">
                 {editingPropertyId ? "Edit listing details" : "Launch a new listing"}
               </h3>
             </div>
-            <div className="rounded-2xl bg-gold-100 p-3">
+            <div className="rounded-lg bg-gold-100 p-3 shadow-sm">
               <Camera className="h-5 w-5 text-gold-700" />
             </div>
           </div>
@@ -477,13 +491,14 @@ export function PropertyManagement({
               </select>
             </label>
 
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50/80 p-4">
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-4">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Property media</p>
                   <p className="mt-1 text-sm text-slate-500">Upload listing images directly to S3 using signed URLs.</p>
                 </div>
-                <label className="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-sea-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sea-700">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-sea-600 px-4 py-2.5 text-sm font-bold text-white shadow-glow transition hover:-translate-y-0.5 hover:bg-sea-700">
+                  <Camera className="h-4 w-4" />
                   {uploading ? "Uploading..." : "Upload image"}
                   <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
                 </label>
@@ -491,8 +506,8 @@ export function PropertyManagement({
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {form.watch("imageUrls")?.map((url) => (
-                  <div key={url} className="flex items-center gap-3 rounded-2xl bg-white p-3">
-                    <div className="relative h-16 w-16 overflow-hidden rounded-2xl bg-slate-100">
+                  <div key={url} className="flex items-center gap-3 rounded-lg bg-white p-3 shadow-sm">
+                    <div className="image-frame h-16 w-16 shrink-0">
                       <Image src={url} alt="Uploaded property" fill className="object-cover" unoptimized />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -515,7 +530,7 @@ export function PropertyManagement({
                 </Button>
               ) : null}
               <Button type="submit" disabled={isPending || uploading}>
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="h-4 w-4" />
                 {editingPropertyId ? "Save property" : "Create property"}
               </Button>
             </div>

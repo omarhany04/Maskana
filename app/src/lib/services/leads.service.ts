@@ -71,9 +71,28 @@ async function ensureLeadAccessible(ctx: SessionUser, leadId: string) {
       ...(isAgent(ctx.role) ? { assignedToId: ctx.id } : {}),
     },
     include: {
-      assignedTo: true,
-      property: true,
+      assignedTo: {
+        select: {
+          id: true,
+          name: true,
+          role: true,
+        },
+      },
+      property: {
+        select: {
+          id: true,
+          title: true,
+          referenceCode: true,
+          price: true,
+        },
+      },
       activities: {
+        select: {
+          id: true,
+          type: true,
+          note: true,
+          occurredAt: true,
+        },
         orderBy: {
           occurredAt: "desc",
         },
