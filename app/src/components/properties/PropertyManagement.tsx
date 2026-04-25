@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useDeferredValue, useEffect, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, PencilLine, Save, SearchCode, Trash2 } from "lucide-react";
@@ -88,6 +88,7 @@ export function PropertyManagement({
   const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const editorRef = useRef<HTMLDivElement>(null);
   const deferredQuery = useDeferredValue(query);
 
   const form = useForm<PropertyFormValues>({
@@ -125,6 +126,18 @@ export function PropertyManagement({
     form.reset(defaultPropertyValues);
   }
 
+  function revealEditor() {
+    window.requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      form.setFocus("title");
+    });
+  }
+
+  function openCreateProperty() {
+    resetEditor();
+    revealEditor();
+  }
+
   function editProperty(property: PropertyRecord) {
     setEditingPropertyId(property.id);
     setFeedback(null);
@@ -142,6 +155,7 @@ export function PropertyManagement({
       imageUrls: property.imageUrls ?? [],
       listedById: property.listedBy?.id ?? null,
     });
+    revealEditor();
   }
 
   const onSubmit = form.handleSubmit((values) => {
@@ -252,14 +266,14 @@ export function PropertyManagement({
         title="Listing operations and media workflow"
         description="Manage catalog, upload S3-hosted property media, and preview AI semantic search against the vector index."
         action={
-          <Button onClick={resetEditor} variant={editingPropertyId ? "secondary" : "primary"}>
+          <Button onClick={openCreateProperty} variant={editingPropertyId ? "secondary" : "primary"}>
             <Camera className="h-4 w-4" />
             {editingPropertyId ? "Create listing" : "New listing"}
           </Button>
         }
       />
 
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <section className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_minmax(540px,0.78fr)]">
         <div className="space-y-6">
           <div className="glass-panel p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -403,7 +417,7 @@ export function PropertyManagement({
           </div>
         </div>
 
-        <div className="glass-panel p-6">
+        <div ref={editorRef} className="glass-panel scroll-mt-6 self-start p-6 2xl:sticky 2xl:top-28">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase text-sea-700">
@@ -418,43 +432,43 @@ export function PropertyManagement({
             </div>
           </div>
 
-          <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-            <div className="grid gap-4 md:grid-cols-2">
+          <form className="mt-6 space-y-5" onSubmit={onSubmit}>
+            <div className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Title</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("title")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("title")} />
                 <p className="mt-2 text-xs text-rose-600">{form.formState.errors.title?.message}</p>
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Property type</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("propertyType")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("propertyType")} />
               </label>
             </div>
 
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700">Description</span>
-              <textarea className="min-h-28 w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("description")} />
+              <textarea className="min-h-36 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("description")} />
             </label>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Location</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("location")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("location")} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Address</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("address")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("address")} />
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Price</span>
-                <input type="number" className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("price")} />
+                <input type="number" className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("price")} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                <select className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("status")}>
+                <select className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("status")}>
                   {propertyStatuses.map((status) => (
                     <option key={status} value={status}>
                       {status}
@@ -464,24 +478,24 @@ export function PropertyManagement({
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-3">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Bedrooms</span>
-                <input type="number" className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("bedrooms")} />
+                <input type="number" className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("bedrooms")} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Bathrooms</span>
-                <input type="number" className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("bathrooms")} />
+                <input type="number" className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("bathrooms")} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Area (sqm)</span>
-                <input type="number" className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("areaSqm")} />
+                <input type="number" className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("areaSqm")} />
               </label>
             </div>
 
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700">Listing owner</span>
-              <select className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("listedById")}>
+              <select className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("listedById")}>
                 <option value="">Assign current user</option>
                 {agents.map((agent) => (
                   <option key={agent.id} value={agent.id}>
@@ -521,7 +535,7 @@ export function PropertyManagement({
               </div>
             </div>
 
-            {feedback ? <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{feedback}</div> : null}
+            {feedback ? <div className="rounded-lg border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{feedback}</div> : null}
 
             <div className="flex flex-wrap justify-end gap-3">
               {editingPropertyId ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useEffect, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Bot, Filter, MessageSquare, PencilLine, Save, Sparkles, Trash2, UserPlus2 } from "lucide-react";
@@ -103,6 +103,7 @@ export function LeadManagement({
   const [formMessage, setFormMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
   const deferredQuery = useDeferredValue(query);
 
   const form = useForm<LeadFormValues>({
@@ -154,6 +155,18 @@ export function LeadManagement({
     form.reset(defaultLeadValues);
   }
 
+  function revealEditor() {
+    window.requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      form.setFocus("fullName");
+    });
+  }
+
+  function openCreateLead() {
+    resetEditor();
+    revealEditor();
+  }
+
   function startEditing(lead: LeadRecord) {
     setEditingLeadId(lead.id);
     setFormMessage(null);
@@ -171,6 +184,7 @@ export function LeadManagement({
       assignedToId: lead.assignedTo?.id ?? null,
       propertyId: lead.property?.id ?? null,
     });
+    revealEditor();
   }
 
   const onSubmit = form.handleSubmit((values) => {
@@ -256,14 +270,14 @@ export function LeadManagement({
         title="Lead pipeline and assignment desk"
         description="Capture, qualify, assign, and advance leads with tenant-aware visibility, AI scoring, and built-in outreach."
         action={
-          <Button onClick={resetEditor} variant={editingLeadId ? "secondary" : "primary"}>
+          <Button onClick={openCreateLead} variant={editingLeadId ? "secondary" : "primary"}>
             <UserPlus2 className="h-4 w-4" />
-            {editingLeadId ? "Create new lead" : "Ready to create"}
+            {editingLeadId ? "Create new lead" : "New lead"}
           </Button>
         }
       />
 
-      <section className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+      <section className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_minmax(540px,0.76fr)]">
         <div className="space-y-6">
           <div className="glass-panel p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -466,7 +480,7 @@ export function LeadManagement({
           </div>
         </div>
 
-        <div className="glass-panel p-6">
+        <div ref={editorRef} className="glass-panel scroll-mt-6 self-start p-6 2xl:sticky 2xl:top-28">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase text-sea-700">
@@ -481,31 +495,31 @@ export function LeadManagement({
             </div>
           </div>
 
-          <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-            <div className="grid gap-4 md:grid-cols-2">
+          <form className="mt-6 space-y-5" onSubmit={onSubmit}>
+            <div className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Full name</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("fullName")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("fullName")} />
                 <p className="mt-2 text-xs text-rose-600">{form.formState.errors.fullName?.message}</p>
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Source</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("source")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("source")} />
                 <p className="mt-2 text-xs text-rose-600">{form.formState.errors.source?.message}</p>
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Email</span>
-                <input type="email" className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("email")} />
+                <input type="email" className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("email")} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Phone</span>
                 <input
                   type="tel"
                   placeholder="010..., 201..., or +201..."
-                  className="w-full rounded-2xl border-slate-200 bg-white text-sm"
+                  className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm"
                   {...phoneField}
                   onBlur={(event) => {
                     phoneField.onBlur(event);
@@ -519,7 +533,7 @@ export function LeadManagement({
                     }
                   }}
                 />
-                <p className={`mt-2 text-xs ${showsAutoPhoneHint ? "text-emerald-700" : "text-slate-500"}`}>
+                <p className={`mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-5 ${showsAutoPhoneHint ? "text-emerald-700" : "text-slate-500"}`}>
                   {showsAutoPhoneHint
                     ? `Will be saved as ${normalizedPhonePreview} for WhatsApp compatibility.`
                     : "Local mobile numbers are converted to international format automatically when possible."}
@@ -527,14 +541,14 @@ export function LeadManagement({
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Budget</span>
-                <input type="number" className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("budget")} />
+                <input type="number" className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("budget")} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                <select className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("status")}>
+                <select className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("status")}>
                   {leadStatuses.map((status) => (
                     <option key={status} value={status}>
                       {status}
@@ -544,21 +558,21 @@ export function LeadManagement({
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Location</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("location")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("location")} />
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Property type</span>
-                <input className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("propertyType")} />
+                <input className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("propertyType")} />
               </label>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Intent</span>
-                <select className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("intent")}>
+                <select className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("intent")}>
                   {["buy", "rent", "sell", "invest"].map((intent) => (
                     <option key={intent} value={intent}>
                       {intent}
@@ -568,7 +582,7 @@ export function LeadManagement({
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Property</span>
-                <select className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("propertyId")}>
+                <select className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("propertyId")}>
                   <option value="">No linked property</option>
                   {properties.map((property) => (
                     <option key={property.id} value={property.id}>
@@ -582,7 +596,7 @@ export function LeadManagement({
             {currentUser.role !== "AGENT" ? (
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-slate-700">Assigned agent</span>
-                <select className="w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("assignedToId")}>
+                <select className="min-h-12 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("assignedToId")}>
                   <option value="">Unassigned</option>
                   {agents.map((agent) => (
                     <option key={agent.id} value={agent.id}>
@@ -595,10 +609,10 @@ export function LeadManagement({
 
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700">Notes</span>
-              <textarea className="min-h-28 w-full rounded-2xl border-slate-200 bg-white text-sm" {...form.register("notes")} />
+              <textarea className="min-h-32 w-full rounded-lg border-slate-200 bg-white text-sm" {...form.register("notes")} />
             </label>
 
-            {formMessage ? <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{formMessage}</div> : null}
+            {formMessage ? <div className="rounded-lg border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">{formMessage}</div> : null}
 
             <div className="flex flex-wrap justify-end gap-3">
               {editingLeadId ? (
